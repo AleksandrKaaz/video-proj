@@ -42,6 +42,7 @@ const Container = () => {
   const handleOnCanvasClick = () => {
     if (videoRef?.current) {
       if (isPlaying) {
+        stopTimeUpdateLoop();
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
@@ -52,8 +53,12 @@ const Container = () => {
   };
 
   const handleListItemClick = (item: Timestamp) => {
-    console.log(currentTimestampIndex, 'currentTimestampIndex1');
-    setCurrentTimestampIndex(currentTimestampIndex + 1);
+    const findedIndex = timestamps?.findIndex((tmstmp) => tmstmp.timestamp === item.timestamp);
+    if (findedIndex || findedIndex === 0) {
+      setCurrentTimestampIndex(findedIndex);
+    } else {
+      setCurrentTimestampIndex(0);
+    }
 
     setSelectedItem(item);
     if (videoRef?.current) {
