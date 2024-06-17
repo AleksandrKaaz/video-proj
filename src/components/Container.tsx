@@ -7,8 +7,6 @@ import { timestampStore } from '../stores/timestamp';
 import { observer } from 'mobx-react';
 
 const Container = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-
   let {
     currentTimestampIndex,
     displayedItems,
@@ -25,7 +23,6 @@ const Container = () => {
 
   useEffect(() => {
     api.getTimestamps().then((result) => sortListItems(result));
-
     if (canvasRef.current && videoRef.current) {
       canvasRef.current.width = videoRef.current.clientWidth;
       canvasRef.current.height = videoRef.current.clientHeight;
@@ -41,18 +38,20 @@ const Container = () => {
 
   const handleOnCanvasClick = () => {
     if (videoRef?.current) {
-      if (isPlaying) {
-        stopTimeUpdateLoop();
+      if (!videoRef.current.paused) {
         videoRef.current.pause();
-        setIsPlaying(false);
+        stopTimeUpdateLoop();
       } else {
         videoRef.current.play();
-        setIsPlaying(true);
       }
     }
   };
 
   const handleListItemClick = (item: Timestamp) => {
+    if (videoRef.current?.paused) {
+      stopTimeUpdateLoop();
+    }
+
     const findedIndex = timestamps?.findIndex((tmstmp) => tmstmp.timestamp === item.timestamp);
     if (findedIndex || findedIndex === 0) {
       setCurrentTimestampIndex(findedIndex);
@@ -68,7 +67,10 @@ const Container = () => {
 
   const handleTimeUpdate = async () => {
     timeUpdateRAFId = window.requestAnimationFrame(handleTimeUpdate);
-    console.log(timeUpdateRAFId, 'timeUpdateRAFId');
+
+    if (videoRef.current?.paused) {
+      stopTimeUpdateLoop();
+    }
 
     if (canvasRef.current) {
       if (timestamps && videoRef?.current) {
