@@ -16,7 +16,7 @@ class TimestampStore {
     this.timestamps = items;
   };
 
-  setSelectedItem = (item: Timestamp) => {
+  setSelectedItem = (item: Timestamp | null) => {
     this.selectedItem = item;
   };
 

@@ -75,8 +75,8 @@ const Container = () => {
         const currentTimestamp = timestamps[currentTimestampIndex];
         if (displayedItems.length > 0) {
           const item = displayedItems[0];
-
           if (item.timestamp + item.duration < videoRef.current.currentTime) {
+            setSelectedItem(null);
             let ctx = canvasRef.current.getContext('2d');
             if (ctx) {
               ctx?.clearRect(
@@ -90,6 +90,7 @@ const Container = () => {
           }
         }
         if (currentTimestamp.timestamp < videoRef.current.currentTime) {
+          setSelectedItem(currentTimestamp);
           let ctx = canvasRef.current.getContext('2d');
           if (ctx) {
             ctx.fillStyle = 'green';
