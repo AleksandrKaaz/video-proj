@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Timestamp } from '../types/timestamp';
 import classNames from 'classnames';
 import convert from '../utils/convert';
@@ -12,6 +12,14 @@ type ListItemProps = {
 export const ListItem = (props: ListItemProps) => {
   const { data, handleClick, isSelected } = props;
 
+  const itemRef = useRef<HTMLLIElement | null>(null);
+
+  useEffect(() => {
+    if (isSelected && itemRef.current) {
+      itemRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [isSelected]);
+
   const itemClasses = classNames({
     itemContainer: true,
     selected: isSelected,
@@ -19,7 +27,7 @@ export const ListItem = (props: ListItemProps) => {
 
   return (
     <>
-      <li className={itemClasses} onClick={() => handleClick(data)}>
+      <li ref={itemRef} className={itemClasses} onClick={() => handleClick(data)}>
         <div className="paramValue">{convert.formatTime(data.timestamp)}</div>
       </li>
     </>
