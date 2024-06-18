@@ -5,6 +5,7 @@ import api from '../api/timestamp';
 import { Timestamp } from '../types/timestamp';
 import { timestampStore } from '../stores/timestamp';
 import { observer } from 'mobx-react';
+import { sortListItems } from '../utils/sortIListItems';
 
 const Container = () => {
   let {
@@ -22,19 +23,16 @@ const Container = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    api.getTimestamps().then((result) => sortListItems(result));
+    api
+      .getTimestamps()
+      .then((result) => sortListItems(result))
+      .then((sortedListItems) => setTimestamps(sortedListItems));
+
     if (canvasRef.current && videoRef.current) {
       canvasRef.current.width = videoRef.current.clientWidth;
       canvasRef.current.height = videoRef.current.clientHeight;
     }
   }, []);
-
-  const sortListItems = (items: Timestamp[]) => {
-    const sortedItems = items.sort((item1, item2) => {
-      return item1.timestamp - item2.timestamp;
-    });
-    setTimestamps(sortedItems);
-  };
 
   const handleOnCanvasClick = () => {
     if (videoRef?.current) {
