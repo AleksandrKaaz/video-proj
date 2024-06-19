@@ -46,9 +46,8 @@ const Container = () => {
   };
 
   const handleListItemClick = (item: Timestamp) => {
-    if (videoRef.current?.paused) {
-      stopTimeUpdateLoop();
-    }
+    videoRef.current?.pause();
+    stopTimeUpdateLoop();
 
     const findedIndex = timestamps?.findIndex((tmstmp) => tmstmp.timestamp === item.timestamp);
     if (findedIndex || findedIndex === 0) {
@@ -65,7 +64,7 @@ const Container = () => {
 
   const handleTimeUpdate = async () => {
     timeUpdateRAFId = window.requestAnimationFrame(handleTimeUpdate);
-
+    
     if (videoRef.current?.paused) {
       stopTimeUpdateLoop();
     }
