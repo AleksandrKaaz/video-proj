@@ -64,7 +64,6 @@ const Container = () => {
 
   const handleTimeUpdate = async () => {
     timeUpdateRAFId = window.requestAnimationFrame(handleTimeUpdate);
-    
     if (videoRef.current?.paused) {
       stopTimeUpdateLoop();
     }
@@ -102,6 +101,10 @@ const Container = () => {
           }
           displayedItems.push(currentTimestamp);
           currentTimestampIndex += 1;
+          if (currentTimestampIndex > timestamps.length - 1) {
+            stopTimeUpdateLoop();
+            return;
+          }
         }
       }
     }
