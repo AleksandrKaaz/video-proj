@@ -6,18 +6,11 @@ import { Timestamp } from '../types/timestamp';
 import { timestampStore } from '../stores/timestamp';
 import { observer } from 'mobx-react';
 import { sortListItems } from '../utils/sortIListItems';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Container = () => {
-  let {
-    currentTimestampIndex,
-    displayedItems,
-    setCurrentTimestampIndex,
-    selectedItem,
-    setSelectedItem,
-    timeUpdateRAFId,
-    timestamps,
-    setTimestamps,
-  } = timestampStore;
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -26,8 +19,9 @@ const Container = () => {
     api
       .getTimestamps()
       .then((result) => sortListItems(result))
-      .then((sortedListItems) => setTimestamps(sortedListItems));
+      .then((sortedListItems) => dispatch({ type: 'SET_TIMESTAMPS', payload: sortedListItems }));
 
+    console.log(state);
     if (canvasRef.current && videoRef.current) {
       canvasRef.current.width = videoRef.current.clientWidth;
       canvasRef.current.height = videoRef.current.clientHeight;
@@ -49,32 +43,44 @@ const Container = () => {
     videoRef.current?.pause();
     stopTimeUpdateLoop();
 
-    const findedIndex = timestamps?.findIndex((tmstmp) => tmstmp.timestamp === item.timestamp);
+    const findedIndex = state.timestamps?.findIndex(
+      (tmstmp) => tmstmp.timestamp === item.timestamp,
+    );
     if (findedIndex || findedIndex === 0) {
-      setCurrentTimestampIndex(findedIndex);
+      dispatch({ type: 'SET_CURRENTTIMESTAMPINDEX', payload: findedIndex });
+      // setCurrentTimestampIndex(findedIndex);
     } else {
-      setCurrentTimestampIndex(0);
+      dispatch({ type: 'SET_CURRENTTIMESTAMPINDEX', payload: 0 });
+      // setCurrentTimestampIndex(0);
     }
 
-    setSelectedItem(item);
+    dispatch({ type: 'SET_SELECTEDITEM', payload: item });
+    // setSelectedItem(item);
     if (videoRef?.current) {
       videoRef.current.currentTime = item.timestamp;
     }
   };
 
   const handleTimeUpdate = async () => {
-    timeUpdateRAFId = window.requestAnimationFrame(handleTimeUpdate);
+    dispatch({
+      type: 'SET_TIMEUPDATERAFID',
+      payload: window.requestAnimationFrame(handleTimeUpdate),
+    });
+
     if (videoRef.current?.paused) {
       stopTimeUpdateLoop();
+      // return;
     }
 
     if (canvasRef.current) {
-      if (timestamps && videoRef?.current) {
-        const currentTimestamp = timestamps[currentTimestampIndex];
-        if (displayedItems.length > 0) {
-          const item = displayedItems[0];
+      if (state.timestamps && videoRef?.current) {
+        const currentTimestamp = state.timestamps[state.currentTimestampIndex];
+
+        if (state.displayedItems.length > 0) {
+          const item = state.displayedItems[0];
           if (item.timestamp + item.duration < videoRef.current.currentTime) {
-            setSelectedItem(null);
+            dispatch({ type: 'SET_SELECTEDITEM', payload: null });
+            // setSelectedItem(null);
             let ctx = canvasRef.current.getContext('2d');
             if (ctx) {
               ctx?.clearRect(
@@ -84,11 +90,13 @@ const Container = () => {
                 item.zone.height + 2,
               );
             }
-            displayedItems.shift();
+            dispatch({ type: 'REMOVE_FROM_DISPLAYEDITEMS' });
+            // displayedItems.shift();
           }
         }
         if (currentTimestamp.timestamp < videoRef.current.currentTime) {
-          setSelectedItem(currentTimestamp);
+          dispatch({ type: 'SET_SELECTEDITEM', payload: currentTimestamp });
+          // setSelectedItem(currentTimestamp);
           let ctx = canvasRef.current.getContext('2d');
           if (ctx) {
             ctx.fillStyle = 'green';
@@ -99,9 +107,16 @@ const Container = () => {
               currentTimestamp.zone.height,
             );
           }
-          displayedItems.push(currentTimestamp);
-          currentTimestampIndex += 1;
-          if (currentTimestampIndex > timestamps.length - 1) {
+
+          dispatch({ type: 'ADD_TO_DISPLAYEDITEMS', payload: currentTimestamp });
+          // displayedItems.push(currentTimestamp);
+          console.log(state.displayedItems, 'dspli');
+
+          console.log(state.currentTimestampIndex, 'state.currentTimestampIndex');
+
+          dispatch({ type: 'SET_CURRENTTIMESTAMPINDEX', payload: state.currentTimestampIndex + 1 });
+          // currentTimestampIndex += 1;
+          if (state.currentTimestampIndex > state.timestamps.length - 1) {
             stopTimeUpdateLoop();
             return;
           }
@@ -111,7 +126,7 @@ const Container = () => {
   };
 
   const stopTimeUpdateLoop = () => {
-    window.cancelAnimationFrame(timeUpdateRAFId);
+    window.cancelAnimationFrame(state.timeUpdateRAFId);
   };
 
   return (
@@ -136,11 +151,11 @@ const Container = () => {
       </div>
       <div className="column">
         <ul>
-          {timestamps?.map((item) => (
+          {state.timestamps?.map((item) => (
             <ListItem
               data={item}
               handleClick={handleListItemClick}
-              isSelected={selectedItem?.timestamp === item.timestamp}
+              isSelected={state.selectedItem?.timestamp === item.timestamp}
             />
           ))}
         </ul>
@@ -149,4 +164,4 @@ const Container = () => {
   );
 };
 
-export default observer(Container);
+export default Container;

@@ -1,9 +1,9 @@
 import { Timestamp } from '../types/timestamp';
 
-const pathPrefix = 'https://run.mocky.io';
+const pathPrefix = 'http://localhost:3006';
 
 async function getTimestamps(): Promise<Timestamp[]> {
-  const response = await fetch(`${pathPrefix}/v3/86ba5ad4-c45e-4f3d-9a07-83ce9a345833`, {
+  const response = await fetch(`${pathPrefix}/`, {
     method: 'GET',
   });
   const data = await response.json();
